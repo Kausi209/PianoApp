@@ -8,27 +8,15 @@ export async function load() {
 }
 
 export const actions = {
-  addToFavorites: async ({ request }) => {
+  // eine einzige default-Action
+  default: async ({ request }) => {
     const data = await request.formData();
     const id = data.get("id");
+    const favorite = data.get("favorite") === "true"; // "true" oder "false" als String
 
-    const song = {
+    await db.updateSong({
       _id: id,
-      favorite: true
-    };
-
-    await db.updateSong(song);
-  },
-
-  removeFromFavorites: async ({ request }) => {
-    const data = await request.formData();
-    const id = data.get("id");
-
-    const song = {
-      _id: id,
-      favorite: false
-    };
-
-    await db.updateSong(song);
+      favorite
+    });
   }
 };
