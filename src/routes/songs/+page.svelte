@@ -1,15 +1,25 @@
 <script>
-  export let data;
+let { data } = $props();
+  // lokaler State mit Runes:
+  let activeTab = $state('all'); // 'all' | 'favorites'
 
-  // which tab is active? 'all' or 'favorites'
-  let activeTab = "all";
-
-  // this will automatically update when activeTab or data.songs changes
-  $: filteredSongs =
-    activeTab === "favorites"
+  // abgeleiteter State – ersetzt dein `$: filteredSongs = ...`
+  const filteredSongs = $derived(
+    activeTab === 'favorites'
       ? data.songs.filter((s) => s.favorite)
-      : data.songs;
+      : data.songs
+  );
+
+  // optional, kleine Helfer für Lesbarkeit:
+  function showAll() {
+    activeTab = 'all';
+  }
+
+  function showFavorites() {
+    activeTab = 'favorites';
+  }
 </script>
+
 
 <main class="songs-page">
   <!-- Page header -->
@@ -24,19 +34,20 @@
   <!-- 🔹 THIS is the "second nav" for this page -->
   <div class="songs-subnav">
     <button
-      class="subnav-btn"
-      class:active={activeTab === "all"}
-      on:click={() => (activeTab = "all")}
-    >
-      Alle Songs
-    </button>
-    <button
-      class="subnav-btn"
-      class:active={activeTab === "favorites"}
-      on:click={() => (activeTab = "favorites")}
-    >
-      Favoriten
-    </button>
+  class="subnav-btn"
+  class:active={activeTab === 'all'}
+  onclick={showAll}
+>
+  Alle Songs
+</button>
+
+<button
+  class="subnav-btn"
+  class:active={activeTab === 'favorites'}
+  onclick={showFavorites}
+>
+  Favoriten
+</button>
   </div>
 
   <!-- Main list card -->
