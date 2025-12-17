@@ -153,6 +153,44 @@ async function deleteSong(id) {
   return null;
 }
 
+const monthlyCollection = db.collection("monthly_submissions");
+
+// alle Einsendungen für einen bestimmten Monat (z.B. "2025-01-experience")
+async function getMonthlySubmissions(monthSlug) {
+  let subs = [];
+  try {
+    subs = await monthlyCollection
+      .find({ monthSlug })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    subs.forEach((s) => {
+      s._id = s._id.toString();
+      // createdAt ist Date, lassen wir als Date, Svelte kann damit umgehen
+    });
+  } catch (err) {
+    console.log("getMonthlySubmissions error:", err.message);
+  }
+  return subs;
+}
+
+// neue Einsendung anlegen
+async function createMonthlySubmission(submission) {
+  const doc = {
+    ...submission,
+    status: "pending",      // default-Status
+    createdAt: new Date()
+  };
+
+  try {
+    const result = await monthlyCollection.insertOne(doc);
+    return result.insertedId.toString();
+  } catch (err) {
+    console.log("createMonthlySubmission error:", err.message);
+    return null;
+  }
+}
+
 // export all functions so that they can be used in other files
 export default {
   getSongs,
@@ -160,5 +198,7 @@ export default {
   getSongBySlug,
   createSong,
   updateSong,
-  deleteSong
+  deleteSong,
+  getMonthlySubmissions,
+  createMonthlySubmission
 };

@@ -44,7 +44,7 @@
   </section>
 
   <section class="features">
-    <h2>Warum <span>Pianly</span>?</h2>
+    <h2>Warum Pianly?</h2>
 
     <div class="feature-grid">
       <div class="feature-card">
@@ -172,7 +172,7 @@
 /* Hero Card rechts */
 .hero-card {
   background: rgba(0,0,0,0.88);
-  color: #fff;
+  color: #ffffff;
   border-radius: 1.5rem;
   padding: 1.6rem 1.8rem;
   max-width: 360px;
@@ -221,7 +221,7 @@
 
 /* Features Section */
 .features {
-  background: rgba(255,255,255,0.9);
+  background: rgba(0, 0, 0, 0.9);
   border-radius: 1.5rem;
   padding: 2rem 1.8rem;
   box-shadow: 0 12px 25px rgba(0,0,0,0.15);
@@ -231,11 +231,7 @@
   text-align: center;
   margin-bottom: 1.8rem;
   font-size: 1.8rem;
-  color: #1a102f;
-}
-
-.features h2 span {
-  color: #000;
+  color: #ffffff;
 }
 
 .feature-grid {
@@ -245,7 +241,7 @@
 }
 
 .feature-card {
-  background: #f5f0ff;
+  background: #a28dfe;
   border-radius: 1.1rem;
   padding: 1.3rem 1.2rem;
   box-shadow: 0 8px 18px rgba(0,0,0,0.08);
@@ -254,11 +250,13 @@
 .feature-card h3 {
   margin-bottom: 0.6rem;
   font-size: 1.1rem;
+  color: black;
 }
 
 .feature-card p {
   font-size: 0.95rem;
   line-height: 1.4;
+  color: black;
 }
 
 /* Responsive */
