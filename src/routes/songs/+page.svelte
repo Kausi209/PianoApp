@@ -1,5 +1,8 @@
 <script>
-let { data } = $props();
+  import { signIn } from "@auth/sveltekit/client";
+const { data } = $props();
+const authed = data.authed ?? false;
+ const songs = data.songs ?? [];
   // lokaler State mit Runes:
   let activeTab = $state('all'); // 'all' | 'favorites'
 
@@ -20,7 +23,7 @@ let { data } = $props();
   }
 </script>
 
-
+{#if authed}
 <main class="songs-page">
   <!-- Page header -->
   <header class="songs-header">
@@ -145,7 +148,28 @@ let { data } = $props();
     </div>
   </section>
 </main>
+{:else}
 
+  <div class="locked-wrap">
+    <div class="blurred">
+      <!-- Fake Randomizer UI -->
+      <div class="randomizer-skeleton">
+        <div class="sk-title"></div>
+        <div class="sk-card"></div>
+        <div class="sk-btn"></div>
+      </div>
+    </div>
+
+    <div class="overlay">
+      <h2>Willst du den Randomizer benutzen?</h2>
+      <p>Melde dich mit Google an, um Songs zufällig zu entdecken.</p>
+
+      <button class="login-btn" type="button" onclick={() => signIn("google")}>
+        Mit Google anmelden
+      </button>
+    </div>
+  </div>
+  {/if}
 <style>
   .songs-page {
     min-height: calc(100vh - 80px);
@@ -457,6 +481,126 @@ let { data } = $props();
       justify-content: flex-start;
     }
   }
+  /* ===== RANDOMIZER PAGE ===== */
+
+.randomizer-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 24px 80px;
+  text-align: center;
+}
+
+/* ===== LOGIN / LOCK GATE ===== */
+
+.locked-wrap {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+/* blurred fake content */
+.blurred {
+  filter: blur(10px);
+  transform: scale(1.02);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* fake randomizer card */
+.randomizer-skeleton {
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 48px 32px;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+}
+
+.sk-title {
+  height: 28px;
+  width: 260px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.sk-card {
+  width: 100%;
+  height: 180px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sk-btn {
+  width: 160px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* overlay text + button */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  padding: 36px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  color: #fff;
+}
+
+.overlay h2 {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 800;
+}
+
+.overlay p {
+  max-width: 420px;
+  margin: 0 auto 12px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* login button */
+.login-btn {
+  margin-top: 6px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #a28dfe, #c2b2ff);
+  color: #000;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 35px rgba(162, 141, 254, 0.45);
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 640px) {
+  .randomizer-page {
+    padding: 48px 16px 70px;
+  }
+
+  .overlay h2 {
+    font-size: 1.6rem;
+  }
+
+  .randomizer-skeleton {
+    padding: 36px 22px;
+  }
+}
+
 
   @media (max-width: 600px) {
     .songs-page {

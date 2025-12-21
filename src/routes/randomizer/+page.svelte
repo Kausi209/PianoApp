@@ -1,12 +1,17 @@
 <script>
-  export let data;
+  import { signIn } from "@auth/sveltekit/client";
 
-  let currentSong = null;
-  let lastIndex = -1;
-  let isRevealing = false;
+  const { data } = $props();
+
+  const authed = $derived(data.authed);
+  const songs = $derived(data.songs ?? []);
+
+  let currentSong = $state(null);
+  let lastIndex = $state(-1);
+  let isRevealing = $state(false);
 
   function shuffle() {
-    const list = data.songs;
+    const list = songs;
     if (!list || list.length === 0) return;
 
     let idx;
@@ -18,15 +23,14 @@
     currentSong = list[idx];
 
     isRevealing = false;
-    setTimeout(() => {
-      isRevealing = true;
-    }, 10);
+    setTimeout(() => (isRevealing = true), 10);
   }
 
   function closeReveal() {
     isRevealing = false;
   }
 </script>
+
 
 
 <main class="rand-page">
@@ -38,7 +42,7 @@
         Perfekt, wenn du nicht weißt, was du als Nächstes spielen sollst.
       </p>
     </header>
-
+{#if authed}
     <div class="rand-center">
       <button class="shuffle-btn" on:click={shuffle}>
         <span class="icon">🎶</span>
@@ -95,6 +99,28 @@
         </article>
       </section>
     {/if}
+    {:else}
+
+  <div class="locked-wrap">
+    <div class="blurred">
+      <!-- Fake Randomizer UI -->
+      <div class="randomizer-skeleton">
+        <div class="sk-title"></div>
+        <div class="sk-card"></div>
+        <div class="sk-btn"></div>
+      </div>
+    </div>
+
+    <div class="overlay">
+      <h2>Willst du den Randomizer benutzen?</h2>
+      <p>Melde dich mit Google an, um Songs zufällig zu entdecken.</p>
+
+      <button class="login-btn" type="button" on:click={() => signIn("google")}>
+        Mit Google anmelden
+      </button>
+    </div>
+  </div>
+  {/if}
   </section>
 
   {#if isRevealing && currentSong}
@@ -462,4 +488,165 @@
     flex-direction: row;
   }
 }
+/* ===== LOGIN LOCK / BLUR WALL ===== */
+
+.locked-wrap {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+/* Verblasster Hintergrund */
+.blurred {
+  filter: blur(12px);
+  transform: scale(1.03);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Overlay oben drüber */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 32px;
+  background: rgba(5, 5, 8, 0.6);
+  backdrop-filter: blur(6px);
+  color: #fff;
+}
+
+.overlay h2 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.overlay p {
+  max-width: 420px;
+  margin: 0 auto 12px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* Login Button */
+.login-btn {
+  margin-top: 6px;
+  align-self: center;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a28dfe, #c2b2ff);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(162, 141, 254, 0.45);
+}
+
+/* ===== SKELETONS (FAKE CONTENT) ===== */
+
+/* Titel Balken */
+.sk-title {
+  height: 28px;
+  width: 260px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  margin-bottom: 10px;
+}
+
+/* Subtitle Balken */
+.sk-sub {
+  height: 18px;
+  width: 420px;
+  max-width: 90%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+}
+
+/* ===== RANDOMIZER SKELETON ===== */
+
+.randomizer-skeleton {
+  padding: 42px;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+}
+
+.sk-card {
+  width: 360px;
+  height: 200px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sk-btn {
+  width: 160px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ===== MONTHLY SONG SKELETON ===== */
+
+.monthly-skeleton {
+  padding: 36px;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.sk-hero {
+  height: 180px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: 26px;
+}
+
+.sk-cta {
+  height: 46px;
+  width: 220px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  margin-bottom: 30px;
+}
+
+.sk-list {
+  display: grid;
+  gap: 16px;
+}
+
+.sk-item {
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 640px) {
+  .overlay h2 {
+    font-size: 1.6rem;
+  }
+
+  .randomizer-skeleton {
+    padding: 28px;
+  }
+
+  .sk-card {
+    width: 100%;
+  }
+}
+
 </style>

@@ -190,6 +190,37 @@ async function createMonthlySubmission(submission) {
     return null;
   }
 }
+// db.js (ergänzen)
+
+async function usersCol() {
+  return db.collection("users");
+}
+
+export async function upsertUserFromGoogle({ email, name, image }) {
+  const col = await usersCol();
+  await col.updateOne(
+    { email },
+    {
+      $setOnInsert: { email, createdAt: new Date() },
+      $set: { googleName: name ?? "", image: image ?? "", updatedAt: new Date() }
+    },
+    { upsert: true }
+  );
+}
+
+export async function getUserByEmail(email) {
+  const col = await usersCol();
+  return col.findOne({ email });
+}
+
+export async function setUsername({ email, username }) {
+  const col = await usersCol();
+  await col.updateOne(
+    { email },
+    { $set: { username, updatedAt: new Date() } }
+  );
+}
+
 
 // export all functions so that they can be used in other files
 export default {
@@ -200,5 +231,9 @@ export default {
   updateSong,
   deleteSong,
   getMonthlySubmissions,
-  createMonthlySubmission
+  createMonthlySubmission,
+  usersCol,
+  upsertUserFromGoogle,
+  getUserByEmail,
+  setUsername
 };

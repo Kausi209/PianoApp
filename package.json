@@ -18,6 +18,7 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
+		"@auth/sveltekit": "^1.11.1",
 		"mongodb": "^7.0.0"
 	}
 }

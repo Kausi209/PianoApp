@@ -1,11 +1,14 @@
 <script>
   // Svelte 5 props
+  import { signIn } from "@auth/sveltekit/client";
   const { data } = $props();
 
-  const month = data.month;
-  const submissions = data.submissions ?? [];
+  const authed = $derived(data.authed);
+  const month = $derived(data.month);
+  const submissions = $derived(data.submissions ?? []);
 </script>
 
+{#if authed}
 <main class="monthly-page">
   <!-- HERO SECTION -->
   <section class="monthly-hero">
@@ -26,6 +29,7 @@
   </section>
 
   <!-- SUBMISSIONS SECTION -->
+   
   <section class="submissions-section">
     <h2>Teilnahmen dieses Monats</h2>
 
@@ -72,7 +76,35 @@
       </div>
     {/if}
   </section>
+  
 </main>
+{:else}
+
+  <div class="locked-wrap">
+    <div class="blurred">
+      <!-- Fake Monthly Song UI -->
+      <div class="monthly-skeleton">
+        <div class="sk-hero"></div>
+        <div class="sk-cta"></div>
+        <div class="sk-list">
+          {#each Array(4) as _}
+            <div class="sk-item"></div>
+          {/each}
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay">
+      <h2>Willst du beim Monthly Song mitmachen?</h2>
+      <p>Logge dich mit Google ein, um Teilnahmen zu sehen und selbst mitzumachen.</p>
+
+      <button class="login-btn" type="button" onclick={() => signIn("google")}>
+        Mit Google anmelden
+      </button>
+    </div>
+  </div>
+
+{/if}
 
 <style>
 .monthly-page {
@@ -361,4 +393,165 @@ textarea {
     padding: 1.4rem 1.3rem 1.6rem;
   }
 }
+/* ===== LOGIN LOCK / BLUR WALL ===== */
+
+.locked-wrap {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+/* Verblasster Hintergrund */
+.blurred {
+  filter: blur(12px);
+  transform: scale(1.03);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Overlay oben drüber */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 32px;
+  background: rgba(5, 5, 8, 0.6);
+  backdrop-filter: blur(6px);
+  color: #fff;
+}
+
+.overlay h2 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.overlay p {
+  max-width: 420px;
+  margin: 0 auto 12px;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* Login Button */
+.login-btn {
+  margin-top: 6px;
+  align-self: center;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a28dfe, #c2b2ff);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(162, 141, 254, 0.45);
+}
+
+/* ===== SKELETONS (FAKE CONTENT) ===== */
+
+/* Titel Balken */
+.sk-title {
+  height: 28px;
+  width: 260px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  margin-bottom: 10px;
+}
+
+/* Subtitle Balken */
+.sk-sub {
+  height: 18px;
+  width: 420px;
+  max-width: 90%;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 24px;
+}
+
+/* ===== RANDOMIZER SKELETON ===== */
+
+.randomizer-skeleton {
+  padding: 42px;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  display: grid;
+  gap: 22px;
+  justify-items: center;
+}
+
+.sk-card {
+  width: 360px;
+  height: 200px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sk-btn {
+  width: 160px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ===== MONTHLY SONG SKELETON ===== */
+
+.monthly-skeleton {
+  padding: 36px;
+  border-radius: 28px;
+  background: rgba(0, 0, 0, 0.75);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.sk-hero {
+  height: 180px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  margin-bottom: 26px;
+}
+
+.sk-cta {
+  height: 46px;
+  width: 220px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  margin-bottom: 30px;
+}
+
+.sk-list {
+  display: grid;
+  gap: 16px;
+}
+
+.sk-item {
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 640px) {
+  .overlay h2 {
+    font-size: 1.6rem;
+  }
+
+  .randomizer-skeleton {
+    padding: 28px;
+  }
+
+  .sk-card {
+    width: 100%;
+  }
+}
+
 </style>
