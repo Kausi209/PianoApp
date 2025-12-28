@@ -177,8 +177,10 @@ async function getMonthlySubmissions(monthSlug) {
 // neue Einsendung anlegen
 async function createMonthlySubmission(submission) {
   const doc = {
+    votes: 0,
+    voterEmails: [],
     ...submission,
-    status: "pending",      // default-Status
+    status: "pending",
     createdAt: new Date()
   };
 
@@ -190,7 +192,100 @@ async function createMonthlySubmission(submission) {
     return null;
   }
 }
-// db.js (ergänzen)
+
+
+// einzelne Einsendung per ID holen
+async function getMonthlySubmissionById(id) {
+  try {
+    const doc = await monthlyCollection.findOne({ _id: new ObjectId(id) });
+    if (!doc) return null;
+
+    doc._id = doc._id.toString();
+    return doc;
+  } catch (err) {
+    console.log("getMonthlySubmissionById error:", err.message);
+    return null;
+  }
+}
+
+// Vote hinzufügen (1 User 1 Vote pro Submission)
+async function addVoteToMonthlySubmission(id, voterEmail) {
+  try {
+    const result = await monthlyCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+        voterEmails: { $ne: voterEmail } // verhindert Double-Vote serverseitig
+      },
+      {
+        $inc: { votes: 1 },
+        $addToSet: { voterEmails: voterEmail }
+      }
+    );
+
+    return result.modifiedCount === 1;
+  } catch (err) {
+    console.log("addVoteToMonthlySubmission error:", err.message);
+    return false;
+  }
+}
+
+async function removeUserVoteFromMonth(monthSlug, voterEmail) {
+  try {
+    await monthlyCollection.updateMany(
+      { monthSlug, voterEmails: voterEmail },
+      {
+        $pull: { voterEmails: voterEmail },
+        $inc: { votes: -1 }
+      }
+    );
+  } catch (err) {
+    console.log("removeUserVoteFromMonth error:", err.message);
+  }
+}
+
+async function upsertMonthlySubmission({ monthSlug, userEmail, ...rest }) {
+  try {
+    const result = await monthlyCollection.updateOne(
+      { monthSlug, userEmail }, // ✅ eindeutig: 1 pro user pro monat
+      {
+        $set: {
+          ...rest,
+          monthSlug,
+          userEmail,
+          updatedAt: new Date()
+        },
+        $setOnInsert: {
+          votes: 0,
+          voterEmails: [],
+          status: "pending",
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
+
+    // returns true if inserted or updated
+    return result.upsertedCount === 1 || result.modifiedCount === 1;
+  } catch (err) {
+    console.log("upsertMonthlySubmission error:", err.message);
+    return false;
+  }
+}
+
+async function getMonthlySubmissionByUser(monthSlug, userEmail) {
+  try {
+    const doc = await monthlyCollection.findOne({ monthSlug, userEmail });
+    if (!doc) return null;
+    doc._id = doc._id.toString();
+    return doc;
+  } catch (err) {
+    console.log("getMonthlySubmissionByUser error:", err.message);
+    return null;
+  }
+}
+
+
+
 
 async function usersCol() {
   return db.collection("users");
@@ -235,5 +330,10 @@ export default {
   usersCol,
   upsertUserFromGoogle,
   getUserByEmail,
-  setUsername
+  setUsername,
+  getMonthlySubmissionById,
+  addVoteToMonthlySubmission,
+  removeUserVoteFromMonth,
+  upsertMonthlySubmission,
+  getMonthlySubmissionByUser
 };

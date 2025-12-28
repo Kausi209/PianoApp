@@ -1,5 +1,4 @@
 <script>
-  // falls du später Actions nutzt (Fehlermeldungen etc.)
   const { form } = $props();
 </script>
 
@@ -7,13 +6,12 @@
   <section class="form-card">
     <h1>Teilnahme am Monthly Song</h1>
     <p class="subtitle">
-      Fülle das Formular aus und verlinke dein YouTube-Video, in dem du den
-      aktuellen Monatssong spielst.
+      Lade dein Video als YouTube-Link hoch. Name/Email kommen automatisch aus deinem Account.
     </p>
 
     {#if form?.success}
       <p class="success">
-        Vielen Dank für deine Teilnahme! Dein Beitrag wurde gespeichert.
+        Vielen Dank! Dein Beitrag wurde gespeichert.
       </p>
     {/if}
 
@@ -23,44 +21,6 @@
 
     <form method="POST" class="participation-form">
       <div class="form-grid">
-        <label>
-          Name *
-          <input
-            type="text"
-            name="name"
-            required
-            value={form?.values?.name || ""}
-          />
-        </label>
-
-        <label>
-          E-Mail *
-          <input
-            type="email"
-            name="email"
-            required
-            value={form?.values?.email || ""}
-          />
-        </label>
-
-        <label>
-          Telefon
-          <input
-            type="tel"
-            name="phone"
-            value={form?.values?.phone || ""}
-          />
-        </label>
-
-        <label>
-          Adresse
-          <input
-            type="text"
-            name="address"
-            value={form?.values?.address || ""}
-          />
-        </label>
-
         <label class="full">
           YouTube-Link zu deinem Piano-Video *
           <input
@@ -72,13 +32,37 @@
           />
         </label>
 
-        <label class="full">
-          Nachricht / Bemerkungen
+        <label>
+          Instrument *
+          <select name="instrument" required>
+            <option value="" selected={!(form?.values?.instrument)}>Bitte wählen…</option>
+            <option value="acoustic" selected={form?.values?.instrument === "acoustic"}>Akustisches Klavier</option>
+            <option value="digital" selected={form?.values?.instrument === "digital"}>Digital Piano</option>
+            <option value="keyboard" selected={form?.values?.instrument === "keyboard"}>Keyboard</option>
+            <option value="other" selected={form?.values?.instrument === "other"}>Andere</option>
+          </select>
+        </label>
+
+        <label>
+          Bemerkungen (optional)
           <textarea
             name="message"
             rows="3"
-            placeholder="Optional: ein paar Worte zu deiner Aufnahme..."
+            placeholder="Optional: ein paar Worte zu deiner Aufnahme…"
           >{form?.values?.message || ""}</textarea>
+        </label>
+
+        <label class="full checkbox">
+          <input
+            type="checkbox"
+            name="confirm"
+            value="yes"
+            checked={form?.values?.confirm === "yes"}
+            required
+          />
+          <span>
+            Ich bestätige, dass dieses Video von mir gespielt wurde und über den Link abrufbar ist.
+          </span>
         </label>
       </div>
 
@@ -153,7 +137,8 @@ label.full {
 }
 
 input,
-textarea {
+textarea,
+select {
   border-radius: 0.6rem;
   border: 1px solid #4b5563;
   padding: 0.5rem 0.7rem;
@@ -164,6 +149,19 @@ textarea {
 
 textarea {
   resize: vertical;
+}
+
+.checkbox {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding-top: 0.2rem;
+}
+
+.checkbox input {
+  margin-top: 0.2rem;
+  width: 18px;
+  height: 18px;
 }
 
 .submit-btn {

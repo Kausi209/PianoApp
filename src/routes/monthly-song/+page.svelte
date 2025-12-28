@@ -1,557 +1,440 @@
 <script>
-  // Svelte 5 props
-  import { signIn } from "@auth/sveltekit/client";
-  const { data } = $props();
+  const { data, form } = $props();
 
-  const authed = $derived(data.authed);
-  const month = $derived(data.month);
-  const submissions = $derived(data.submissions ?? []);
+  const authed = $derived(!!data?.authed);
+  const month = $derived(data?.month);
+  const submissions = $derived(data?.submissions ?? []);
+  const myEmail = $derived(data?.session?.user?.email ?? null);
+
+  const leaderboard = $derived(
+    [...submissions].sort((a, b) => (b.votes ?? 0) - (a.votes ?? 0)).slice(0, 10)
+  );
+
+  function hasVoted(s) {
+    return !!myEmail && Array.isArray(s?.voterEmails) && s.voterEmails.includes(myEmail);
+  }
 </script>
 
-{#if authed}
-<main class="monthly-page">
-  <!-- HERO SECTION -->
-  <section class="monthly-hero">
-    <p class="month-label">Monatlicher Song</p>
+<main class="page">
+  <!-- HERO (always visible) -->
+  <section class="card hero">
+    <div class="kicker">MONATLICHER SONG</div>
 
-    <h1>
-      Dieser Monat: <span>{month.title}</span>
-    </h1>
+    <h1 class="title">{month?.title ?? "Monatlicher Song"}</h1>
+    <p class="artist">{month?.artist ?? ""}</p>
 
-    <p class="hero-artist">von {month.artist}</p>
+    <p class="desc">
+      {month?.description ?? ""}
+    </p>
 
-    <p class="hero-desc">{month.description}</p>
-
-    <!-- IMPORTANT: Send to participate page -->
-    <a href="/monthly-song/create" class="cta-btn">
-      Jetzt teilnehmen
-    </a>
+    <a class="cta" href="/monthly-song/create">Jetzt teilnehmen</a>
   </section>
 
-  <!-- SUBMISSIONS SECTION -->
-   
-  <section class="submissions-section">
-    <h2>Teilnahmen dieses Monats</h2>
-
-    {#if submissions.length === 0}
-      <p class="empty">
-        Noch keine Teilnahme eingegangen. Sei die erste Person, die mitmacht!
-      </p>
-    {:else}
-      <div class="submissions-table">
-        <div class="submissions-header">
-          <span>Name</span>
-          <span>E-Mail</span>
-          <span>YouTube</span>
-          <span>Status</span>
-          <span>Datum</span>
+  <!-- LOCKED AREA (blur when not authed) -->
+  <div class="locked-wrap">
+    <section class={`grid ${!authed ? "blurred" : ""}`}>
+      <!-- LEFT: submissions -->
+      <section class="card">
+        <div class="headRow">
+          <h2 class="h2">Alle Teilnahmen</h2>
+          <span class="pill">{submissions.length}</span>
         </div>
 
-        {#each submissions as sub}
-          <article class="submission-row">
-            <div class="cell name">{sub.name}</div>
-            <div class="cell email">{sub.email}</div>
+        {#if form?.error}
+          <p class="error">{form.error}</p>
+        {/if}
 
-            <div class="cell youtube">
-              <a href={sub.youtubeUrl} target="_blank">
-                Video ansehen
-              </a>
-            </div>
+        {#if submissions.length === 0}
+          <p class="muted">
+            Noch keine Teilnahme eingegangen. Sei die erste Person, die mitmacht!
+          </p>
+        {:else}
+          <div class="rows">
+            {#each submissions as s (s._id)}
+              <article class="itemRow">
+                <div class="left">
+                  <div class="name">{s.username ?? "Teilnehmer"}</div>
 
-            <div class="cell status">
-              <span class={`status-pill status-${sub.status || "pending"}`}>
-                {sub.status || "pending"}
-              </span>
-            </div>
+                  <div class="meta">
+                    Instrument: {s.instrument ?? "—"}
+                    <span class="dot">•</span>
+                    Votes: {s.votes ?? 0}
+                  </div>
 
-            <div class="cell date">
-              {#if sub.createdAt}
-                {new Date(sub.createdAt).toLocaleDateString()}
-              {:else}
-                -
-              {/if}
-            </div>
-          </article>
-        {/each}
+                  {#if s.message}
+                    <div class="msg">{s.message}</div>
+                  {/if}
+                </div>
+
+                <div class="right">
+                  <a
+                    class="videoBtn"
+                    href={s.youtubeUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Video
+                  </a>
+
+                  <form method="POST">
+                    <input type="hidden" name="submissionId" value={s._id} />
+                    <button
+                      type="submit"
+                      class={`voteBtn ${hasVoted(s) ? "voted" : ""}`}
+                      formaction="?/vote"
+                      disabled={!authed || (!!myEmail && s.userEmail === myEmail)}
+                      aria-label="Vote"
+                    >
+                      {hasVoted(s) ? "Voted" : "Vote"}
+                    </button>
+                  </form>
+                </div>
+              </article>
+            {/each}
+          </div>
+        {/if}
+      </section>
+
+      <!-- RIGHT: leaderboard -->
+      <aside class="card leaderboard">
+        <div class="headRow">
+          <h2 class="h2">Leaderboard</h2>
+          <span class="pill">Top {Math.min(leaderboard.length, 10)}</span>
+        </div>
+
+        {#if leaderboard.length === 0}
+          <p class="muted">Noch keine Daten.</p>
+        {:else}
+          <ol class="board">
+            {#each leaderboard as x, i (x._id)}
+              <li class="boardRow">
+                <span class="rank">#{i + 1}</span>
+                <span class="user">{x.username ?? "Teilnehmer"}</span>
+                <span class="votes">{x.votes ?? 0}</span>
+              </li>
+            {/each}
+          </ol>
+        {/if}
+      </aside>
+    </section>
+
+    {#if !authed}
+      <div class="overlay">
+        <div class="overlayCard">
+          <h2>Login erforderlich</h2>
+          <p>Logge dich ein, um Teilnahmen zu sehen und abzustimmen.</p>
+          <a class="login-btn" href="/auth/signin">Mit Google einloggen</a>
+        </div>
       </div>
     {/if}
-  </section>
-  
-</main>
-{:else}
-
-  <div class="locked-wrap">
-    <div class="blurred">
-      <!-- Fake Monthly Song UI -->
-      <div class="monthly-skeleton">
-        <div class="sk-hero"></div>
-        <div class="sk-cta"></div>
-        <div class="sk-list">
-          {#each Array(4) as _}
-            <div class="sk-item"></div>
-          {/each}
-        </div>
-      </div>
-    </div>
-
-    <div class="overlay">
-      <h2>Willst du beim Monthly Song mitmachen?</h2>
-      <p>Logge dich mit Google ein, um Teilnahmen zu sehen und selbst mitzumachen.</p>
-
-      <button class="login-btn" type="button" onclick={() => signIn("google")}>
-        Mit Google anmelden
-      </button>
-    </div>
   </div>
-
-{/if}
+</main>
 
 <style>
-.monthly-page {
-  min-height: calc(100vh - 80px);
-  padding: 2.5rem 2rem 3rem;
-  background: radial-gradient(circle at top, #f5ecff 0%, #c9bbff 40%, #a28dfe 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-
-/* Hero */
-.monthly-hero {
-  max-width: 900px;
-  width: 100%;
-  background: rgba(0, 0, 0, 0.94);
-  color: #fefefe;
-  border-radius: 1.8rem;
-  padding: 1.8rem 1.9rem 1.9rem;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
-}
-
-.month-label {
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  opacity: 0.7;
-  margin-bottom: 0.3rem;
-}
-
-.monthly-hero h1 {
-  font-size: 2rem;
-  margin-bottom: 0.2rem;
-}
-
-.monthly-hero h1 span {
-  color: #facc15; /* bisschen goldig für special */
-}
-
-.hero-artist {
-  font-size: 1rem;
-  color: #e0e7ff;
-  margin-bottom: 0.6rem;
-}
-
-.hero-desc {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  margin-bottom: 1rem;
-}
-
-.cta-btn {
-  padding: 0.7rem 1.6rem;
-  border-radius: 999px;
-  border: none;
-  background: #fefefe;
-  color: #111;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-}
-
-.cta-btn:hover {
-  transform: translateY(-1px);
-  background: #ffffff;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8);
-}
-
-/* Form */
-.form-section {
-  max-width: 900px;
-  width: 100%;
-  background: rgba(15, 23, 42, 0.96);
-  color: #f9fafb;
-  border-radius: 1.5rem;
-  padding: 1.6rem 1.7rem 1.9rem;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.8);
-}
-
-.form-section h2 {
-  margin-bottom: 0.8rem;
-}
-
-.success {
-  color: #bbf7d0;
-  font-size: 0.9rem;
-  margin-bottom: 0.7rem;
-}
-
-.error {
-  color: #fecaca;
-  font-size: 0.9rem;
-  margin-bottom: 0.7rem;
-}
-
-.participation-form {
-  margin-top: 0.4rem;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.9rem 1.2rem;
-}
-
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-}
-
-label.full {
-  grid-column: 1 / -1;
-}
-
-input,
-textarea {
-  border-radius: 0.6rem;
-  border: 1px solid #4b5563;
-  padding: 0.5rem 0.7rem;
-  background: #020617;
-  color: #f9fafb;
-  font-size: 0.9rem;
-}
-
-textarea {
-  resize: vertical;
-}
-
-.submit-btn {
-  margin-top: 1rem;
-  padding: 0.6rem 1.6rem;
-  border-radius: 999px;
-  border: none;
-  background: #a28dfe;
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.submit-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.85);
-}
-
-/* Submissions */
-.submissions-section {
-  max-width: 900px;
-  width: 100%;
-  background: rgba(0, 0, 0, 0.94);
-  color: #f9fafb;
-  border-radius: 1.5rem;
-  padding: 1.6rem 1.7rem 1.9rem;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.85);
-}
-
-.submissions-section h2 {
-  margin-bottom: 0.8rem;
-}
-
-.empty {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.submissions-table {
-  margin-top: 0.6rem;
-}
-
-.submissions-header,
-.submission-row {
-  display: grid;
-  grid-template-columns: 1.3fr 1.5fr 1fr 0.8fr 0.9fr;
-  gap: 0.4rem;
-  align-items: center;
-}
-
-.submissions-header {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.7;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-}
-
-.submission-row {
-  padding: 0.5rem 0 0.5rem;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.8);
-  font-size: 0.9rem;
-}
-
-.cell.email {
-  word-break: break-all;
-  font-size: 0.85rem;
-}
-
-.cell.youtube a {
-  color: #a5b4fc;
-  text-decoration: none;
-  font-size: 0.85rem;
-}
-
-.cell.youtube a:hover {
-  text-decoration: underline;
-}
-
-/* Status pill */
-.status-pill {
-  padding: 0.18rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  text-transform: capitalize;
-}
-
-.status-pending {
-  background: rgba(250, 204, 21, 0.25);
-  color: #facc15;
-}
-
-.status-reviewed {
-  background: rgba(59, 130, 246, 0.25);
-  color: #93c5fd;
-}
-
-.status-top50 {
-  background: rgba(52, 211, 153, 0.25);
-  color: #6ee7b7;
-}
-
-/* Responsive */
-@media (max-width: 800px) {
-  .form-grid {
-    grid-template-columns: 1fr;
+  /* page */
+  .page {
+    min-height: calc(100vh - 80px);
+    padding: 34px 40px 70px;
+    background: #c8bbff;
   }
 
-  .submissions-header {
-    display: none;
+  /* shared card */
+  .card {
+    background: rgba(10, 10, 14, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 28px;
+    padding: 28px 32px;
+    color: #fff;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.45);
   }
 
-  .submission-row {
-    grid-template-columns: 1.4fr 1.2fr;
-    grid-template-areas:
-      "name status"
-      "email email"
-      "youtube date";
-    row-gap: 0.3rem;
+  /* hero */
+  .hero {
+    margin-bottom: 14px;
   }
 
-  .cell.name {
-    grid-area: name;
-    font-weight: 600;
+  .kicker {
+    letter-spacing: 0.18em;
+    opacity: 0.65;
+    font-size: 0.85rem;
   }
-  .cell.status {
-    grid-area: status;
-    justify-self: flex-end;
+
+  .title {
+    font-size: 3.1rem;
+    line-height: 1.05;
+    margin: 12px 0 6px;
+    font-weight: 900;
   }
-  .cell.email {
-    grid-area: email;
+
+  .artist {
+    font-size: 1.15rem;
+    opacity: 0.9;
+    margin: 0 0 12px;
   }
-  .cell.youtube {
-    grid-area: youtube;
+
+  .desc {
+    font-size: 1.05rem;
+    opacity: 0.9;
+    max-width: 1000px;
+    margin: 0 0 16px;
   }
-  .cell.date {
-    grid-area: date;
-    font-size: 0.8rem;
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    border-radius: 999px;
+    background: #fff;
+    color: #000;
+    font-weight: 900;
+    text-decoration: none;
+    width: fit-content;
+  }
+
+  /* locked area (your blur style) */
+  .locked-wrap {
+    position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+
+  .blurred {
+    filter: blur(7px);
+    opacity: 0.75;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(2px);
+  }
+
+  .overlayCard {
+    width: min(440px, 92%);
+    background: rgba(10, 10, 14, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 18px 18px;
+    text-align: center;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  .overlayCard h2 {
+    margin: 0 0 8px;
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+
+  .overlayCard p {
+    margin: 0;
+    opacity: 0.85;
+  }
+
+  .login-btn {
+    display: inline-flex;
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 999px;
+    background: #fff;
+    color: #000;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  /* grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .leaderboard {
+    position: sticky;
+    top: 14px;
+  }
+
+  /* section headings */
+  .headRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 900;
+  }
+
+  .pill {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 900;
+    opacity: 0.95;
+  }
+
+  /* rows */
+  .rows {
+    display: grid;
+    gap: 12px;
+  }
+
+  .itemRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .left {
+    min-width: 0;
+  }
+
+  .name {
+    font-weight: 900;
+    font-size: 1.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meta {
+    opacity: 0.75;
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  .dot {
+    margin: 0 10px;
+    opacity: 0.6;
+  }
+
+  .msg {
+    margin-top: 10px;
+    opacity: 0.9;
+    font-size: 0.95rem;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .videoBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+  }
+
+  .voteBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .voteBtn.voted {
+    background: linear-gradient(135deg, #facc15, #f59e0b);
+    color: #000;
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .voteBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* leaderboard list */
+  .board {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .boardRow {
+    display: grid;
+    grid-template-columns: 64px 1fr 56px;
+    align-items: center;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.035);
+    padding: 14px 14px;
+  }
+
+  .rank {
+    opacity: 0.7;
+    font-weight: 900;
+  }
+
+  .user {
+    font-weight: 900;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .votes {
+    text-align: right;
+    font-weight: 900;
+    opacity: 0.95;
+  }
+
+  /* misc */
+  .muted {
     opacity: 0.8;
-  }
-}
-
-@media (max-width: 600px) {
-  .monthly-page {
-    padding: 2rem 1rem 2.5rem;
+    margin: 0;
+    font-size: 1.05rem;
   }
 
-  .monthly-hero,
-  .form-section,
-  .submissions-section {
-    padding: 1.4rem 1.3rem 1.6rem;
-  }
-}
-/* ===== LOGIN LOCK / BLUR WALL ===== */
-
-.locked-wrap {
-  position: relative;
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-/* Verblasster Hintergrund */
-.blurred {
-  filter: blur(12px);
-  transform: scale(1.03);
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Overlay oben drüber */
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  gap: 14px;
-  text-align: center;
-  padding: 32px;
-  background: rgba(5, 5, 8, 0.6);
-  backdrop-filter: blur(6px);
-  color: #fff;
-}
-
-.overlay h2 {
-  font-size: 1.9rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.overlay p {
-  max-width: 420px;
-  margin: 0 auto 12px;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-/* Login Button */
-.login-btn {
-  margin-top: 6px;
-  align-self: center;
-  padding: 12px 18px;
-  border-radius: 999px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #a28dfe, #c2b2ff);
-  color: #000;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 30px rgba(162, 141, 254, 0.45);
-}
-
-/* ===== SKELETONS (FAKE CONTENT) ===== */
-
-/* Titel Balken */
-.sk-title {
-  height: 28px;
-  width: 260px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-  margin-bottom: 10px;
-}
-
-/* Subtitle Balken */
-.sk-sub {
-  height: 18px;
-  width: 420px;
-  max-width: 90%;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  margin-bottom: 24px;
-}
-
-/* ===== RANDOMIZER SKELETON ===== */
-
-.randomizer-skeleton {
-  padding: 42px;
-  border-radius: 28px;
-  background: rgba(0, 0, 0, 0.75);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  display: grid;
-  gap: 22px;
-  justify-items: center;
-}
-
-.sk-card {
-  width: 360px;
-  height: 200px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.sk-btn {
-  width: 160px;
-  height: 42px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* ===== MONTHLY SONG SKELETON ===== */
-
-.monthly-skeleton {
-  padding: 36px;
-  border-radius: 28px;
-  background: rgba(0, 0, 0, 0.75);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-}
-
-.sk-hero {
-  height: 180px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.12);
-  margin-bottom: 26px;
-}
-
-.sk-cta {
-  height: 46px;
-  width: 220px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  margin-bottom: 30px;
-}
-
-.sk-list {
-  display: grid;
-  gap: 16px;
-}
-
-.sk-item {
-  height: 56px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-/* ===== MOBILE ===== */
-
-@media (max-width: 640px) {
-  .overlay h2 {
-    font-size: 1.6rem;
+  .error {
+    color: #fecaca;
+    font-weight: 900;
+    margin: 10px 0 0;
   }
 
-  .randomizer-skeleton {
-    padding: 28px;
+  @media (max-width: 1100px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .leaderboard {
+      position: static;
+    }
+    .page {
+      padding: 26px 16px 60px;
+    }
+    .title {
+      font-size: 2.4rem;
+    }
   }
-
-  .sk-card {
-    width: 100%;
-  }
-}
-
 </style>

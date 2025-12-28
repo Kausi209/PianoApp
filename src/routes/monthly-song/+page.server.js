@@ -1,7 +1,5 @@
 import db from "$lib/db.js";
-import { fail } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
-
 
 const CURRENT_MONTH = {
   slug: "2025-01-experience",
@@ -12,57 +10,67 @@ const CURRENT_MONTH = {
 };
 
 export async function load({ locals }) {
-const session = locals.auth ? await locals.auth() : null;
+  const session = locals.auth ? await locals.auth() : null;
   const authed = !!session?.user?.email;
 
-  if (!authed) return { authed: false, month: CURRENT_MONTH };
+  // ✅ Guest: keine echten Daten ausliefern
+  if (!authed) {
+    return {
+      authed: false,
+      month: CURRENT_MONTH,
+      submissions: []
+    };
+  }
 
   const profile = await db.getUserByEmail(session.user.email);
   if (!profile?.username) throw redirect(303, "/username");
 
   const submissions = await db.getMonthlySubmissions(CURRENT_MONTH.slug);
 
-  return { authed: true, month: CURRENT_MONTH, submissions };
+  return {
+    authed: true,
+    month: CURRENT_MONTH,
+    submissions,
+    session: { user: { email: session.user.email } }
+  };
 }
 
 
 export const actions = {
-  default: async ({ request, locals }) => {
+  vote: async ({ request, locals }) => {
     const session = await locals.auth();
+    if (!session?.user?.email) return fail(401);
 
-    // ❌ nicht eingeloggt → keine Teilnahme
-    if (!session?.user) {
-      return fail(401, { error: "Not authenticated" });
+    const email = session.user.email;
+
+    const fd = await request.formData();
+    const submissionId = fd.get("submissionId")?.toString();
+    if (!submissionId) return fail(400);
+
+    const submission = await db.getMonthlySubmissionById(submissionId);
+    if (!submission) return fail(404);
+
+    // ❌ nicht eigenen Beitrag voten
+    if (submission.userEmail === email) {
+      return fail(400, { error: "Eigener Beitrag" });
     }
 
-    const data = await request.formData();
+    const hasVotedHere = submission.voterEmails?.includes(email);
 
-    const name = data.get("name")?.toString().trim();
-    const email = data.get("email")?.toString().trim();
-    const phone = data.get("phone")?.toString().trim();
-    const address = data.get("address")?.toString().trim();
-    const youtubeUrl = data.get("youtube")?.toString().trim();
-    const message = data.get("message")?.toString().trim();
-
-    const values = { name, email, phone, address, youtubeUrl, message };
-
-    if (!name || !email || !youtubeUrl) {
-      return fail(400, {
-        error: "Bitte fülle mindestens Name, E-Mail und YouTube-Link aus.",
-        values
-      });
+    if (hasVotedHere) {
+      // 🔁 Vote entfernen (Toggle off)
+      await db.removeUserVoteFromMonth(submission.monthSlug, email);
+      return { voted: false };
     }
 
-    await db.createMonthlySubmission({
-      monthSlug: CURRENT_MONTH.slug,
-      name,
-      email,
-      phone,
-      address,
-      youtubeUrl,
-      message
-    });
+    // 🔄 Vote verschieben:
+    // 1) alten Vote entfernen (falls vorhanden)
+    await db.removeUserVoteFromMonth(submission.monthSlug, email);
 
-    return { success: true };
+    // 2) neuen Vote setzen
+    await db.addVoteToMonthlySubmission(submissionId, email);
+
+    return { voted: true };
   }
 };
+
