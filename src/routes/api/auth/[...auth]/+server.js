@@ -3,7 +3,7 @@ import Google from "@auth/sveltekit/providers/google";
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, AUTH_SECRET } from "$env/static/private";
 import db from "$lib/db.js";
 
-export const { handle, signIn, signOut } = SvelteKitAuth({
+export const { GET, POST } = SvelteKitAuth({
   providers: [
     Google({
       clientId: GOOGLE_CLIENT_ID,
