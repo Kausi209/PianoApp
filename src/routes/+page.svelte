@@ -38,7 +38,7 @@
       </div>
 
       <div class="hero-card-footer">
-        <a href="/songs" class="btn small">Songliste ansehen</a>
+        <a href="/songs/river-flows-in-you" class="btn small primary">Details ansehen</a>
       </div>
     </div>
   </section>

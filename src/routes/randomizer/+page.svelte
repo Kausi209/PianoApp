@@ -506,21 +506,22 @@
 
 /* Overlay oben drüber */
 .overlay {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  inset: 80px 0 0 0;
   display: grid;
   place-content: center;
-  gap: 14px;
+  gap: 20px;
   text-align: center;
-  padding: 32px;
-  background: rgba(5, 5, 8, 0.6);
+  padding: 36px;
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
   color: #fff;
+  z-index: 10;
 }
 
 .overlay h2 {
-  font-size: 1.9rem;
-  font-weight: 700;
+  font-size: 3rem;
+  font-weight: 800;
   margin: 0;
 }
 
@@ -529,15 +530,16 @@
   margin: 0 auto 12px;
   opacity: 0.9;
   line-height: 1.5;
+  font-size: 1.2rem;
 }
 
 /* Login Button */
 .login-btn {
   margin-top: 6px;
   align-self: center;
-  padding: 12px 18px;
+  padding: 16px 30px;
   border-radius: 999px;
-  font-size: 0.95rem;
+  font-size: 1.2rem;
   font-weight: 700;
   background: linear-gradient(135deg, #a28dfe, #c2b2ff);
   color: #000;

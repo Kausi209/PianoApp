@@ -1,4 +1,6 @@
 <script>
+  import { signIn } from "@auth/sveltekit/client";
+
   const { data, form } = $props();
 
   const authed = $derived(!!data?.authed);
@@ -16,19 +18,21 @@
 </script>
 
 <main class="page">
-  <!-- HERO (always visible) -->
-  <section class="card hero">
-    <div class="kicker">MONATLICHER SONG</div>
+  {#if authed}
+    <!-- HERO (only visible when authed) -->
+    <section class="card hero">
+      <div class="kicker">MONATLICHER SONG</div>
 
-    <h1 class="title">{month?.title ?? "Monatlicher Song"}</h1>
-    <p class="artist">{month?.artist ?? ""}</p>
+      <h1 class="title">{month?.title ?? "Monatlicher Song"}</h1>
+      <p class="artist">{month?.artist ?? ""}</p>
 
-    <p class="desc">
-      {month?.description ?? ""}
-    </p>
+      <p class="desc">
+        {month?.description ?? ""}
+      </p>
 
-    <a class="cta" href="/monthly-song/create">Jetzt teilnehmen</a>
-  </section>
+      <a class="cta" href="/monthly-song/create">Jetzt teilnehmen</a>
+    </section>
+  {/if}
 
   <!-- LOCKED AREA (blur when not authed) -->
   <div class="locked-wrap">
@@ -120,11 +124,11 @@
 
     {#if !authed}
       <div class="overlay">
-        <div class="overlayCard">
-          <h2>Login erforderlich</h2>
-          <p>Logge dich ein, um Teilnahmen zu sehen und abzustimmen.</p>
-          <a class="login-btn" href="/auth/signin">Mit Google einloggen</a>
-        </div>
+        <h2>Willst du am monatlichen Song teilnehmen?</h2>
+        <p>Melde dich mit Google an, um Songs einzureichen und abzustimmen.</p>
+        <button class="login-btn" type="button" onclick={() => signIn("google")}>
+          Mit Google anmelden
+        </button>
       </div>
     {/if}
   </div>
@@ -207,44 +211,52 @@
   }
 
   .overlay {
-    position: absolute;
-    inset: 0;
+    position: fixed;
+    inset: 80px 0 0 0;
     display: grid;
-    place-items: center;
-    background: rgba(0, 0, 0, 0.18);
-    backdrop-filter: blur(2px);
-  }
-
-  .overlayCard {
-    width: min(440px, 92%);
-    background: rgba(10, 10, 14, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 18px 18px;
+    place-content: center;
+    gap: 20px;
+    padding: 36px;
     text-align: center;
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    color: #fff;
+    z-index: 10;
   }
 
-  .overlayCard h2 {
-    margin: 0 0 8px;
-    font-size: 1.35rem;
-    font-weight: 900;
-  }
-
-  .overlayCard p {
+  .overlay h2 {
     margin: 0;
-    opacity: 0.85;
+    font-size: 3rem;
+    font-weight: 800;
   }
 
+  .overlay p {
+    max-width: 420px;
+    margin: 0 auto 12px;
+    opacity: 0.9;
+    line-height: 1.5;
+    font-size: 1.2rem;
+  }
+
+  /* login button */
   .login-btn {
-    display: inline-flex;
-    margin-top: 12px;
-    padding: 12px 16px;
+    margin-top: 6px;
+    padding: 16px 30px;
     border-radius: 999px;
-    background: #fff;
-    color: #000;
     font-weight: 900;
-    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #a28dfe, #c2b2ff);
+    color: #000;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+    font-size: 1.2rem;
+  }
+
+  .login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 35px rgba(162, 141, 254, 0.45);
   }
 
   /* grid */

@@ -1,155 +1,230 @@
 <script>
   import { signIn } from "@auth/sveltekit/client";
-const { data } = $props();
-const authed = data.authed ?? false;
- const songs = data.songs ?? [];
-  // lokaler State mit Runes:
-  let activeTab = $state('all'); // 'all' | 'favorites'
 
-  // abgeleiteter State – ersetzt dein `$: filteredSongs = ...`
-  const filteredSongs = $derived(
-    activeTab === 'favorites'
-      ? data.songs.filter((s) => s.favorite)
-      : data.songs
-  );
+  const { data } = $props();
+  const authed = data.authed ?? false;
 
-  // optional, kleine Helfer für Lesbarkeit:
+  // Tabs wie vorher
+  let activeTab = $state("all"); // 'all' | 'favorites'
+
+  // ✅ Sort State (nur A–Z Toggle)
+  let sortKey = $state(null); // 'title' | 'difficulty' | 'duration'
+  let sortDir = $state("asc"); // 'asc' | 'desc'
+  let searchQuery = $state("");
+
   function showAll() {
-    activeTab = 'all';
+    activeTab = "all";
   }
 
   function showFavorites() {
-    activeTab = 'favorites';
+    activeTab = "favorites";
   }
+
+  // ✅ Klick-Handler für Kategorienamen
+  function toggleSort(key) {
+    if (sortKey === key) {
+      sortDir = sortDir === "asc" ? "desc" : "asc";
+    } else {
+      sortKey = key;
+      sortDir = "asc";
+    }
+  }
+
+  function arrow(key) {
+    if (sortKey !== key) return "";
+    return sortDir === "asc" ? "↑" : "↓";
+  }
+
+  function durationToSeconds(d) {
+    if (!d || typeof d !== "string") return Number.POSITIVE_INFINITY;
+    const [m, s] = d.split(":").map(Number);
+    if (Number.isNaN(m) || Number.isNaN(s)) return Number.POSITIVE_INFINITY;
+    return m * 60 + s;
+  }
+
+  function sortList(list) {
+    if (!sortKey) return list;
+
+    const sorted = [...list].sort((a, b) => {
+      let res = 0;
+
+      if (sortKey === "title") {
+        res = (a.title ?? "").localeCompare(b.title ?? "", undefined, { sensitivity: "base" });
+      } else if (sortKey === "difficulty") {
+        // A–Z auf dem Text (Beginner/Intermediate/Advanced)
+        res = (a.difficulty ?? "").localeCompare(b.difficulty ?? "", undefined, { sensitivity: "base" });
+      } else if (sortKey === "duration") {
+        res = durationToSeconds(a.duration) - durationToSeconds(b.duration);
+      }
+
+      return sortDir === "asc" ? res : -res;
+    });
+
+    return sorted;
+  }
+
+  // ✅ Basis-Liste wie vorher (genau deine alte Logik)
+  let baseSongs = $state([]);
+
+  $effect(() => {
+    let songs = activeTab === "favorites"
+      ? (data.songs ?? []).filter((s) => s.favorite)
+      : (data.songs ?? []);
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      songs = songs.filter(song =>
+        (song.title && song.title.toLowerCase().includes(query)) ||
+        (song.artist && song.artist.toLowerCase().startsWith(query))
+      );
+    }
+    baseSongs = songs;
+  });
+
+  // ✅ final: nur sort obendrauf
+  const filteredSongs = $derived(sortList(baseSongs));
 </script>
 
+
+
+
 {#if authed}
-<main class="songs-page">
-  <!-- Page header -->
-  <header class="songs-header">
-    <h1>Deine Songs</h1>
-    <p>
-      Wähle einen Song aus, füge ihn zu deinen Favoriten hinzu oder öffne die
-      Detailseite.
-    </p>
-  </header>
+  <main class="songs-page">
+    <!-- Page header -->
+    <header class="songs-header">
+      <h1>Deine Songs</h1>
+      <p>
+        Wähle einen Song aus, füge ihn zu deinen Favoriten hinzu oder öffne die
+        Detailseite.
+      </p>
+    </header>
 
-  <!-- 🔹 THIS is the "second nav" for this page -->
-  <div class="songs-subnav">
-    <button
-  class="subnav-btn"
-  class:active={activeTab === 'all'}
-  onclick={showAll}
->
-  Alle Songs
-</button>
+    <!-- 🔹 THIS is the "second nav" for this page -->
+    <div class="songs-subnav">
+      <button
+        class="subnav-btn"
+        class:active={activeTab === "all"}
+        onclick={showAll}
+      >
+        Alle Songs
+      </button>
 
-<button
-  class="subnav-btn"
-  class:active={activeTab === 'favorites'}
-  onclick={showFavorites}
->
-  Favoriten
-</button>
-  </div>
-
-  <!-- Main list card -->
-  <section class="songs-card">
-    <div class="songs-card-header">
-      <span>#</span>
-      <span>Song</span>
-      <span>Schwierigkeit</span>
-      <span>Dauer</span>
-      <span>Aktionen</span>
+      <button
+        class="subnav-btn"
+        class:active={activeTab === "favorites"}
+        onclick={showFavorites}
+      >
+        Favoriten
+      </button>
     </div>
 
-    <div class="songs-list">
-      {#each filteredSongs as song, i}
-        <article class="song-row">
-          <div class="song-cell index">
-            {i + 1}
-          </div>
+    <!-- Main list card -->
+    <section class="songs-card">
+      <div class="songs-card-header">
+  <span>#</span>
 
-          <div class="song-cell main">
-            <div class="song-cover">
-              {#if song.image_url}
-                <img
-                  src={song.image_url}
-                  alt={`Cover von ${song.title}`}
-                  loading="lazy"
-                />
-              {:else}
-                <div class="song-cover-fallback">♪</div>
+  <button type="button" class="th-btn" onclick={() => toggleSort("title")}>
+    Song <span class="th-arrow">{arrow("title")}</span>
+  </button>
+
+  <button type="button" class="th-btn" onclick={() => toggleSort("difficulty")}>
+    Schwierigkeit <span class="th-arrow">{arrow("difficulty")}</span>
+  </button>
+
+  <button type="button" class="th-btn" onclick={() => toggleSort("duration")}>
+    Dauer <span class="th-arrow">{arrow("duration")}</span>
+  </button>
+</div>
+
+      <div class="search-container">
+        <input type="text" bind:value={searchQuery} placeholder="Suche Songs..." class="search-input" />
+      </div>
+
+      <div class="songs-list">
+        {#each filteredSongs as song, i}
+          <article class="song-row">
+            <div class="song-cell index">
+              {i + 1}
+            </div>
+
+            <div class="song-cell main">
+              <div class="song-cover">
+                {#if song.image_url}
+                  <img
+                    src={song.image_url}
+                    alt={`Cover von ${song.title}`}
+                    loading="lazy"
+                  />
+                {:else}
+                  <div class="song-cover-fallback">♪</div>
+                {/if}
+              </div>
+
+              <div class="song-text">
+                <a class="song-title" href={`/songs/${song.slug}`}>
+                  {song.title}
+                </a>
+                <div class="song-meta">
+                  <span class="song-artist">{song.artist}</span>
+                  {#if song.genre}
+                    <span class="pill pill-genre">{song.genre}</span>
+                  {/if}
+                </div>
+              </div>
+            </div>
+
+            <div class="song-cell diff">
+              {#if song.difficulty}
+                <span
+                  class={`pill pill-diff pill-${song.difficulty.toLowerCase()}`}
+                >
+                  {song.difficulty}
+                </span>
               {/if}
             </div>
 
-            <div class="song-text">
-              <a class="song-title" href={`/songs/${song.slug}`}>
-                {song.title}
-              </a>
-              <div class="song-meta">
-                <span class="song-artist">{song.artist}</span>
-                {#if song.genre}
-                  <span class="pill pill-genre">{song.genre}</span>
-                {/if}
-              </div>
+            <div class="song-cell duration">
+              {song.duration || "-"}
             </div>
-          </div>
 
-          <div class="song-cell diff">
-            {#if song.difficulty}
-              <span
-                class={`pill pill-diff pill-${song.difficulty.toLowerCase()}`}
-              >
-                {song.difficulty}
-              </span>
+            <div class="song-cell actions">
+              <form method="POST" class="fav-form">
+                <input type="hidden" name="id" value={song._id} />
+                <!-- Zielzustand: wenn gerade NICHT favorite, dann auf true setzen -->
+                <input
+                  type="hidden"
+                  name="favorite"
+                  value={song.favorite ? "false" : "true"}
+                />
+
+                <button
+                  type="submit"
+                  class:active={song.favorite}
+                  class="icon-btn favorite"
+                  aria-label={song.favorite
+                    ? "Aus Favoriten entfernen"
+                    : "Zu Favoriten hinzufügen"}
+                >
+                  {song.favorite ? "★" : "☆"}
+                </button>
+              </form>
+              <a href={`/songs/${song.slug}`} class="details-btn"> Details </a>
+            </div>
+          </article>
+        {/each}
+
+        {#if filteredSongs.length === 0}
+          <div class="empty-state">
+            {#if activeTab === "favorites"}
+              <p>Du hast noch keine Favoriten hinzugefügt.</p>
+            {:else}
+              <p>Keine Songs gefunden.</p>
             {/if}
           </div>
-
-          <div class="song-cell duration">
-            {song.duration || "-"}
-          </div>
-
-          <div class="song-cell actions">
-            <form method="POST" class="fav-form">
-              <input type="hidden" name="id" value={song._id} />
-              <!-- Zielzustand: wenn gerade NICHT favorite, dann auf true setzen -->
-              <input
-                type="hidden"
-                name="favorite"
-                value={song.favorite ? "false" : "true"}
-              />
-
-              <button
-                type="submit"
-                class:active={song.favorite}
-                class="icon-btn favorite"
-                aria-label={song.favorite
-                  ? "Aus Favoriten entfernen"
-                  : "Zu Favoriten hinzufügen"}
-              >
-                {song.favorite ? "★" : "☆"}
-              </button>
-            </form>
-            <a href={`/songs/${song.slug}`} class="details-btn"> Details </a>
-          </div>
-        </article>
-      {/each}
-
-      {#if filteredSongs.length === 0}
-        <div class="empty-state">
-          {#if activeTab === "favorites"}
-            <p>Du hast noch keine Favoriten hinzugefügt.</p>
-          {:else}
-            <p>Keine Songs gefunden.</p>
-          {/if}
-        </div>
-      {/if}
-    </div>
-  </section>
-</main>
+        {/if}
+      </div>
+    </section>
+  </main>
 {:else}
-
   <div class="locked-wrap">
     <div class="blurred">
       <!-- Fake Randomizer UI -->
@@ -161,7 +236,7 @@ const authed = data.authed ?? false;
     </div>
 
     <div class="overlay">
-      <h2>Willst du den Randomizer benutzen?</h2>
+      <h2>Willst du alle Songs anschauen?</h2>
       <p>Melde dich mit Google an, um Songs zufällig zu entdecken.</p>
 
       <button class="login-btn" type="button" onclick={() => signIn("google")}>
@@ -169,7 +244,8 @@ const authed = data.authed ?? false;
       </button>
     </div>
   </div>
-  {/if}
+{/if}
+
 <style>
   .songs-page {
     min-height: calc(100vh - 80px);
@@ -198,6 +274,38 @@ const authed = data.authed ?? false;
   }
 
   /* 🔹 Tabs inside the page */
+  .th-btn {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    text-align: left;
+
+    color: inherit; /* nimmt dein Header-Farbton */
+    font: inherit; /* nimmt dein Header-Font */
+    text-transform: inherit; /* uppercase bleibt */
+    letter-spacing: inherit;
+
+    cursor: pointer;
+  }
+
+  .th-btn:hover {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  .th-btn:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.25);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+
+  .th-arrow {
+    margin-left: 6px;
+    opacity: 0.9;
+  }
+
   .songs-subnav {
     max-width: 900px;
     width: 100%;
@@ -253,6 +361,33 @@ const authed = data.authed ?? false;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     opacity: 0.7;
+  }
+  /* Search bar */
+  .search-container {
+    position: relative;
+    margin: 0.5rem 0 1rem;
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #f7f7f7;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input::placeholder {
+    color: rgba(247, 247, 247, 0.6);
+  }
+
+  .search-input:focus {
+    border-color: #a28dfe;
+    box-shadow: 0 0 0 2px rgba(162, 141, 254, 0.3);
   }
 
   /* Liste + Zeilen */
@@ -389,7 +524,7 @@ const authed = data.authed ?? false;
 
   /* Actions */
   .song-cell.actions {
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 0.6rem;
   }
 
@@ -483,124 +618,125 @@ const authed = data.authed ?? false;
   }
   /* ===== RANDOMIZER PAGE ===== */
 
-.randomizer-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 64px 24px 80px;
-  text-align: center;
-}
-
-/* ===== LOGIN / LOCK GATE ===== */
-
-.locked-wrap {
-  position: relative;
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-/* blurred fake content */
-.blurred {
-  filter: blur(10px);
-  transform: scale(1.02);
-  pointer-events: none;
-  user-select: none;
-}
-
-/* fake randomizer card */
-.randomizer-skeleton {
-  margin: 0 auto;
-  max-width: 520px;
-  padding: 48px 32px;
-  border-radius: 28px;
-  background: rgba(0, 0, 0, 0.75);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
-  display: grid;
-  gap: 22px;
-  justify-items: center;
-}
-
-.sk-title {
-  height: 28px;
-  width: 260px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.sk-card {
-  width: 100%;
-  height: 180px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.sk-btn {
-  width: 160px;
-  height: 42px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-/* overlay text + button */
-.overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  gap: 14px;
-  padding: 36px;
-  text-align: center;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(6px);
-  color: #fff;
-}
-
-.overlay h2 {
-  margin: 0;
-  font-size: 2.1rem;
-  font-weight: 800;
-}
-
-.overlay p {
-  max-width: 420px;
-  margin: 0 auto 12px;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-/* login button */
-.login-btn {
-  margin-top: 6px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  font-weight: 900;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, #a28dfe, #c2b2ff);
-  color: #000;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 35px rgba(162, 141, 254, 0.45);
-}
-
-/* ===== MOBILE ===== */
-
-@media (max-width: 640px) {
   .randomizer-page {
-    padding: 48px 16px 70px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 24px 80px;
+    text-align: center;
+  }
+
+  /* ===== LOGIN / LOCK GATE ===== */
+
+  .locked-wrap {
+    position: relative;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+
+  /* blurred fake content */
+  .blurred {
+    filter: blur(10px);
+    transform: scale(1.02);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* fake randomizer card */
+  .randomizer-skeleton {
+    margin: 0 auto;
+    max-width: 520px;
+    padding: 48px 32px;
+    border-radius: 28px;
+    background: rgba(0, 0, 0, 0.75);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+    display: grid;
+    gap: 22px;
+    justify-items: center;
+  }
+
+  .sk-title {
+    height: 28px;
+    width: 260px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .sk-card {
+    width: 100%;
+    height: 180px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .sk-btn {
+    width: 160px;
+    height: 42px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  /* overlay text + button */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    gap: 14px;
+    padding: 36px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    color: #fff;
   }
 
   .overlay h2 {
-    font-size: 1.6rem;
+    margin: 0;
+    font-size: 2.1rem;
+    font-weight: 800;
   }
 
-  .randomizer-skeleton {
-    padding: 36px 22px;
+  .overlay p {
+    max-width: 420px;
+    margin: 0 auto 12px;
+    opacity: 0.9;
+    line-height: 1.5;
   }
-}
 
+  /* login button */
+  .login-btn {
+    margin-top: 6px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #a28dfe, #c2b2ff);
+    color: #000;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 35px rgba(162, 141, 254, 0.45);
+  }
+
+  /* ===== MOBILE ===== */
+
+  @media (max-width: 640px) {
+    .randomizer-page {
+      padding: 48px 16px 70px;
+    }
+
+    .overlay h2 {
+      font-size: 1.6rem;
+    }
+
+    .randomizer-skeleton {
+      padding: 36px 22px;
+    }
+  }
 
   @media (max-width: 600px) {
     .songs-page {
