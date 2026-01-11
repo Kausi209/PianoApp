@@ -58,30 +58,39 @@ Klavieranfänger sowie fortgeschrittene Hobbyspieler, die Klavierstücke entdeck
 Beschreibt den verbindlichen Umfang gemäss Übungen und allfällige Erweiterungen.
 - **Kernfunktionalität (Mindestumfang):** _gemäss Übungen ab Semesterwoche 8; Workflows kurz nennen und optional illustrieren_  
 - **Akzeptanzkriterien:** _[z. B. „Nutzende können Workflow X von Start bis Abschluss ohne Fehlermeldung durchführen.“]_  
-- **Erweiterungen [Optional]:** _[Liste zusätzlicher Funktionen/Qualitätssprünge, falls umgesetzt]_  
+- **Erweiterungen [Optional]:** _[Liste zusätzlicher Funktionen/Qualitätssprünge, falls umgesetzt]_  5
 
-**Kernfunktionalität (Mindestumfang):**  
-- Anzeige einer Songliste mit zentralen Metadaten (Titel, Schwierigkeit, Dauer)  
-- Persistente Speicherung und Abruf der Songdaten über eine MongoDB-Datenbank  
-- Navigation von der Songliste zur jeweiligen Song-Detailseite  
-- Darstellung detaillierter Songinformationen auf der Detailseite  
-- Einbettung eines passenden Klavier-Lernvideos über YouTube  
-- Authentifizierung von Nutzenden über Google Login  
-- Möglichkeit, Songs als Favoriten zu markieren und erneut aufzurufen  
+Dieses Projekt orientiert sich am Mindestumfang gemäss den Übungen ab Semesterwoche 8. Darüber hinaus wurden zusätzliche Funktionen umgesetzt (siehe Erweiterungen).
 
-**Akzeptanzkriterien:**  
-- Die Songliste wird fehlerfrei geladen und korrekt dargestellt  
-- Nutzende können Songs auswählen und ohne Fehler zur Detailansicht navigieren  
-- Das eingebettete YouTube-Video ist funktionsfähig und lädt zuverlässig  
-- Favoriten können hinzugefügt und entfernt werden und bleiben konsistent gespeichert  
-- Die Anwendung reagiert stabil auf Nutzerinteraktionen (Sortieren, Wechseln der Ansicht)  
+### Kernfunktionalität (Mindestumfang)
+Der Prototyp ermöglicht das strukturierte Entdecken von Klavierstücken und den direkten Zugriff auf Übungsmaterial:
 
-**Erweiterungen [Optional]:**  
-- Suchfunktion zur Filterung der Songliste nach Titel oder weiteren Attributen  
-- Sortierfunktionen (z. B. A–Z / Z–A) für eine bessere Übersicht  
-- Tab-basierte Ansicht zur Trennung von allen Songs und Favoriten  
-- Erweiterte visuelle Gestaltung mit Fokus auf eine moderne, Spotify-ähnliche Benutzeroberfläche  
-- Zusätzliche Metadaten wie Genre oder geschätzte Spieldauer
+- **Songliste anzeigen:** Liste von Songs mit zentralen Metadaten (Titel, Artist, Schwierigkeit, Dauer)
+- **Songdetail öffnen:** Navigation von der Liste auf eine Detailseite pro Song
+- **Songinformationen anzeigen:** Detailansicht mit Beschreibung und Metadaten
+- **Tutorial ansehen:** Einbettung eines passenden YouTube-Tutorials pro Song (inkl. Link zu YouTube)
+- **Datenpersistenz:** Songdaten werden persistent aus einer MongoDB geladen (serverseitig in SvelteKit)
+- **Authentifizierung:** Zugriff auf die Anwendung ist an ein Login via Google gekoppelt (Auth.js)
+
+### Akzeptanzkriterien
+- Die Songliste lädt zuverlässig und zeigt alle Songs mit den erwarteten Metadaten an.
+- Nutzende können einen Song auswählen und gelangen ohne Fehlermeldung zur entsprechenden Detailseite.
+- Das eingebettete YouTube-Tutorial wird korrekt angezeigt und kann abgespielt werden; alternativ kann es über einen Link direkt auf YouTube geöffnet werden.
+- Die Anwendung ist stabil bei typischen Interaktionen (Navigation zwischen Seiten, Laden der Daten, wiederholtes Öffnen von Songs).
+- Ohne Login wird der Zugriff auf die Kerninhalte eingeschränkt und es wird klar zur Anmeldung aufgefordert.
+
+### Erweiterungen (über den Mindestumfang hinaus)
+Folgende Erweiterungen wurden zusätzlich umgesetzt, um den Nutzungskomfort und den „Entdeckungsfaktor“ zu erhöhen:
+
+- **Favoriten:** Songs können als Favorit markiert und in einer separaten Ansicht angezeigt werden.
+- **Tabs/Ansichten:** Umschalten zwischen „Alle Songs“ und „Favoriten“.
+- **Suche & Sortierung:** Songliste kann gefiltert (Suche) und sortiert werden (z. B. A–Z / Z–A).
+- **Randomizer:** Zufällige Songempfehlung zur Inspiration.
+- **Monthly Song Wettbewerb:** Monatlicher Song mit Teilnahme-Flow.
+- **Upload/Teilnahme:** Nutzende können einen Beitrag (eigene Piano-Version) erfassen und einreichen.
+- **Voting & Leaderboard:** Beiträge können bewertet werden; ein Leaderboard zeigt Top-Platzierungen.
+- **UI/Design-Optimierung:** Visuelle Gestaltung und Interaktion wurden über den Mindestumfang hinaus ausgebaut (konsistentes, modernes Interface).
+
 
 
 
@@ -226,17 +235,24 @@ Die Tests zeigten, dass der grundlegende Workflow verständlich und stabil funkt
 
 ## 5. Erweiterungen [Optional]
 
-**Beschreibung & Nutzen:**  
-Über den definierten Mindestumfang hinaus wurden zusätzliche Funktionen umgesetzt, um die Benutzerfreundlichkeit und den Entdeckungsfaktor der Anwendung zu erhöhen. Diese Erweiterungen unterstützen den Kernworkflow, ohne ihn zu verkomplizieren.
+Über den definierten Mindestumfang hinaus wurden mehrere funktionale und konzeptionelle Erweiterungen umgesetzt. Ziel dieser Erweiterungen war es, den Entdeckungscharakter der Anwendung zu erhöhen, die Motivation zur Nutzung zu steigern und eine stärkere Interaktion zwischen den Nutzenden zu ermöglichen.
 
-**Umsetzung in Kürze:**  
-- Erweiterte Sortierfunktionen (z. B. A–Z / Z–A) zur besseren Übersicht in der Songliste  
-- Tab-basierte Trennung zwischen allen Songs und favorisierten Songs  
-- Visuelle Optimierungen im Stil moderner Musikplattformen (Spotify-ähnliches Design)  
-- Vorbereitung einer Suchfunktion zur gezielten Filterung der Songliste  
+### Beschreibung & Nutzen
+Die Erweiterungen erweitern den reinen Konsum von Songinformationen um interaktive und spielerische Elemente. Dadurch wird Pianly nicht nur als Nachschlagewerk, sondern als aktive Lern- und Entdeckungsplattform genutzt.
 
-**Abgrenzung zum Mindestumfang:**  
-Die genannten Erweiterungen sind nicht zwingend notwendig, um den grundlegenden Workflow (Song auswählen → Detailseite → Video abspielen) zu erfüllen. Sie stellen qualitative Verbesserungen dar und erhöhen den Nutzungskomfort, ohne den Kernumfang zu verändern.
+### Umsetzung in Kürze
+- **Favoriten-Funktion:** Nutzende können Songs markieren und in einer separaten Ansicht erneut aufrufen, was das langfristige Nutzen der Anwendung unterstützt.
+- **Erweiterte Songnavigation:** Tabs sowie Such- und Sortierfunktionen ermöglichen eine schnellere Orientierung innerhalb der Songliste.
+- **Randomizer-Modus:** Ein zufälliger Song wird vorgeschlagen, um Inspiration zu bieten, wenn keine konkrete Auswahl vorhanden ist.
+- **Monthly Song Wettbewerb:** Ein monatlich wechselnder Song dient als zentrales Thema für einen kleinen Wettbewerb.
+- **Teilnahme & Beiträge:** Angemeldete Nutzende können zu diesem Song eine eigene Piano-Version einreichen.
+- **Voting-System:** Beiträge können bewertet werden, wodurch ein spielerischer Vergleich entsteht.
+- **Leaderboard:** Die besten Beiträge werden übersichtlich dargestellt, um zusätzliche Motivation zu schaffen.
+- **Authentifizierungsbasierte Zugriffssteuerung:** Bestimmte Funktionen (z. B. Teilnahme, Voting) sind nur für angemeldete Nutzende verfügbar.
+
+### Abgrenzung zum Mindestumfang
+Der Mindestumfang beschränkt sich auf das Entdecken von Songs, das Anzeigen von Detailinformationen sowie das Abspielen von Tutorials. Die oben genannten Erweiterungen sind nicht notwendig, um diesen Kernworkflow zu erfüllen, stellen jedoch zusätzliche Funktionalitäten dar, die den Nutzungskomfort und den Funktionsumfang der Anwendung deutlich erhöhen.
+ 
 
 
 ## 6. Projektorganisation [Optional]
