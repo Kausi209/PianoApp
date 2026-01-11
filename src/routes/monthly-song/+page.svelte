@@ -1,5 +1,6 @@
 <script>
   import { signIn } from "@auth/sveltekit/client";
+  import { page } from '$app/stores';
 
   const { data, form } = $props();
 
@@ -7,6 +8,7 @@
   const month = $derived(data?.month);
   const submissions = $derived(data?.submissions ?? []);
   const myEmail = $derived(data?.session?.user?.email ?? null);
+  const alreadyParticipated = $derived($page.url.searchParams.get('already') === '1');
 
   const leaderboard = $derived(
     [...submissions].sort((a, b) => (b.votes ?? 0) - (a.votes ?? 0)).slice(0, 10)
@@ -32,6 +34,12 @@
 
       <a class="cta" href="/monthly-song/create">Jetzt teilnehmen</a>
     </section>
+
+    {#if alreadyParticipated}
+      <div class="info-message">
+        Du hast bereits an diesem Monat teilgenommen.
+      </div>
+    {/if}
   {/if}
 
   <!-- LOCKED AREA (blur when not authed) -->
@@ -194,6 +202,17 @@
     font-weight: 900;
     text-decoration: none;
     width: fit-content;
+  }
+
+  .info-message {
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #fef3c7;
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    text-align: center;
   }
 
   /* locked area (your blur style) */
