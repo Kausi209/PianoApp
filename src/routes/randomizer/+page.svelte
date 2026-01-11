@@ -29,6 +29,14 @@
   function closeReveal() {
     isRevealing = false;
   }
+
+  function mapDifficulty(diff) {
+    if (!diff) return '';
+    const lower = diff.toLowerCase();
+    if (lower === 'intermediate') return 'medium';
+    if (lower === 'advanced') return 'hard';
+    return lower;
+  }
 </script>
 
 
@@ -76,7 +84,7 @@
 
               <div class="badges">
                 {#if currentSong.difficulty}
-                  <span class={`pill pill-diff pill-${currentSong.difficulty.toLowerCase()}`}>
+                  <span class={`pill pill-diff pill-${mapDifficulty(currentSong.difficulty)}`}>
                     {currentSong.difficulty}
                   </span>
                 {/if}
@@ -133,7 +141,7 @@
 
         <div class="badges">
           {#if currentSong.difficulty}
-            <span class={`pill pill-diff pill-${currentSong.difficulty.toLowerCase()}`}>
+            <span class={`pill pill-diff pill-${mapDifficulty(currentSong.difficulty)}`}>
               {currentSong.difficulty}
             </span>
           {/if}
@@ -335,14 +343,14 @@
   color: #a7f3d0;
 }
 
-.pill-intermediate {
-  background: rgba(129, 140, 248, 0.2);
-  border-color: rgba(129, 140, 248, 0.8);
-  color: #e0e7ff;
+.pill-medium {
+  background: rgba(251, 191, 36, 0.4);
+  border-color: rgba(251, 191, 36, 0.8);
+  color: #fef3c7;
 }
 
-.pill-advanced {
-  background: rgba(248, 113, 113, 0.2);
+.pill-hard {
+  background: rgba(248, 113, 113, 0.4);
   border-color: rgba(248, 113, 113, 0.8);
   color: #fecaca;
 }

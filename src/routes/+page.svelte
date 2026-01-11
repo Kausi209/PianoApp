@@ -30,7 +30,7 @@
       </div>
 
       <div class="hero-card-body">
-        <p><strong>Schwierigkeit:</strong> Beginner – Intermediate</p>
+        <p><strong>Schwierigkeit:</strong> <span>Beginner</span>, <span>Medium</span>, <span>Hard</span></p>
         <p><strong>Style:</strong> Modern Classic</p>
         <p class="card-note">
           „Perfekt, um mit gefühlvollen Melodien und schöner Dynamik zu starten.“

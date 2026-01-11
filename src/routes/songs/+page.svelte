@@ -42,6 +42,14 @@
     return m * 60 + s;
   }
 
+  function mapDifficulty(diff) {
+    if (!diff) return '';
+    const lower = diff.toLowerCase();
+    if (lower === 'medium') return 'medium';
+    if (lower === 'hard') return 'hard';
+    return lower;
+  }
+
   function sortList(list) {
     if (!sortKey) return list;
 
@@ -175,7 +183,7 @@
             <div class="song-cell diff">
               {#if song.difficulty}
                 <span
-                  class={`pill pill-diff pill-${song.difficulty.toLowerCase()}`}
+                  class={`pill pill-diff pill-${mapDifficulty(song.difficulty)}`}
                 >
                   {song.difficulty}
                 </span>
@@ -498,19 +506,19 @@
   }
 
   .pill-beginner {
-    background: rgba(52, 211, 153, 0.15);
+    background: rgba(52, 211, 153, 0.4);
     border-color: rgba(52, 211, 153, 0.6);
     color: #a7f3d0;
   }
 
-  .pill-intermediate {
-    background: rgba(129, 140, 248, 0.18);
-    border-color: rgba(129, 140, 248, 0.8);
-    color: #e0e7ff;
+  .pill-medium {
+    background: rgba(251, 191, 36, 0.4);
+    border-color: rgba(251, 191, 36, 0.8);
+    color: #fef3c7;
   }
 
-  .pill-advanced {
-    background: rgba(248, 113, 113, 0.15);
+  .pill-hard {
+    background: rgba(248, 113, 113, 0.4);
     border-color: rgba(248, 113, 113, 0.7);
     color: #fecaca;
   }
