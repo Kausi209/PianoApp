@@ -1,4 +1,4 @@
-# Projektdokumentation – [Projekttitel]
+# Projektdokumentation – Pianly
 
 ## Inhaltsverzeichnis
 
@@ -55,10 +55,6 @@ Klavieranfänger sowie fortgeschrittene Hobbyspieler, die Klavierstücke entdeck
 
 
 ## 3. Anforderungen & Umfang
-Beschreibt den verbindlichen Umfang gemäss Übungen und allfällige Erweiterungen.
-- **Kernfunktionalität (Mindestumfang):** _gemäss Übungen ab Semesterwoche 8; Workflows kurz nennen und optional illustrieren_  
-- **Akzeptanzkriterien:** _[z. B. „Nutzende können Workflow X von Start bis Abschluss ohne Fehlermeldung durchführen.“]_  
-- **Erweiterungen [Optional]:** _[Liste zusätzlicher Funktionen/Qualitätssprünge, falls umgesetzt]_  5
 
 Dieses Projekt orientiert sich am Mindestumfang gemäss den Übungen ab Semesterwoche 8. Darüber hinaus wurden zusätzliche Funktionen umgesetzt (siehe Erweiterungen).
 
@@ -113,9 +109,6 @@ Die Zielgruppe erwartet eine einfache, übersichtliche Oberfläche mit schneller
 
 
 ### 4.2 Sketch
-- **Variantenüberblick:** _[kurz]_
-- **Skizzen:** _Mehrere Varianten; Unterschiede kurz dokumentieren._
-
 **Variantenüberblick:**  
 In der frühen Entwurfsphase wurden mehrere Layout-Varianten für die zentrale Songseite, die Detailansicht eines Songs sowie die Favoritenansicht skizziert. Ziel war es, unterschiedliche Strukturen und Informationsanordnungen zu vergleichen.
 
@@ -128,6 +121,12 @@ Es wurden mehrere Skizzen erstellt, die sich insbesondere in folgenden Punkten u
 - Zugriff auf Favoriten (eigene Seite vs. Tab-Ansicht)
 
 Die Skizzen dienten als Grundlage, um Vor- und Nachteile der jeweiligen Varianten zu bewerten und eine geeignete Struktur für den Prototypen auszuwählen.
+
+**Abbildung 1:** Crazy 8s 
+![Songliste](static/Crazy8.jpg)
+
+**Abbildung 2:** mehrere Skizzen
+![Songliste](static/Skizze.jpg)
 
 ### 4.3 Decide
 - **Gewählte Variante & Begründung:** _[Entscheidkriterien nennen]_  
@@ -142,95 +141,133 @@ Startseite mit Songliste öffnen → Song auswählen → Detailseite mit Informa
 
 **Referenz-Mockup:**  
 Figma-Mockup der finalen Struktur und des visuellen Konzepts.  
-(Platzhalter: Link oder Screenshot des Mockups wird ergänzt.)
-
+https://www.figma.com/design/YtCXNz8l3CTi0Sq7svYEQf/Pianly?node-id=0-1&t=8xoZD6S8jsvQKNEO-1
 
 ### 4.4 Prototype
-- **Kernfunktionalität:** _[Kurzbeschreibung der Workflows/Funktionen]_  
-- **Deployment:** _[URL]_ 
+**Kernfunktionalität:**  
+- Anzeige einer Songliste mit relevanten Metadaten  
+- Navigation von der Songliste zur jeweiligen Song-Detailseite  
+- Darstellung detaillierter Songinformationen inklusive eingebettetem YouTube-Tutorial  
+- Markieren von Songs als Favoriten und erneuter Zugriff über eine separate Ansicht  
+- Authentifizierung via Google Login mit eingeschränktem Zugriff für nicht angemeldete Nutzende  
 
-Kernfunktionalität:
-Umgesetzt wurde die Songliste, Detailseite mit Video und die Watchlist-Funktion.
+**Erweiterte Funktionalität (im Prototyp umgesetzt):**  
+- **Randomizer:** Zufällige Songempfehlung zur Inspiration  
+- **Monthly Song:** Monatlich wechselnder Song als Wettbewerb  
+- **Teilnahme:** Angemeldete Nutzende können eine eigene Piano-Version zu diesem Song einreichen  
+- **Voting:** Beiträge können bewertet werden  
+- **Leaderboard:** Übersicht der bestbewerteten Beiträge 
 
-Deployment:
-Hier die URL einfügen, sobald deployed (z. B. Vercel/Netlify).
+**Deployment:**
+https://pianly.netlify.app/
 
-#### 4.4.1. Entwurf (Design)
-Beschreibt die Gestaltung und Interaktion.
-> **Hinweis:** Hier wird der **Prototyp** beschrieben, nicht das **Mockup**.
-- **Informationsarchitektur:** _[z. B. Seiten/Navigation: Konzept, nicht die technische Umsetzung]_
-- **Oberflächenentwürfe:** _[wichtige Screens: Screenshots mit kurzer Erläuterung]_  
-- **Designentscheidungen:** _[zentrale Entscheidungen und Begründungen]_
+#### 4.4.1 Entwurf (Design)
 
 **Informationsarchitektur:**  
 Die Anwendung ist in klar abgegrenzte Hauptbereiche unterteilt:  
-Startseite mit Songliste → Detailseite mit Songinformationen und Video → Favoritenansicht für gespeicherte Songs. Die Navigation ist bewusst reduziert gehalten, um den Fokus auf das Üben zu legen.
+Startseite mit Songliste → Song-Detailseite mit Informationen und Video → Favoritenansicht → Randomizer → Monthly Song mit Teilnahme-, Voting- und Leaderboard-Ansicht.  
+Die Navigation ist bewusst reduziert gehalten, um den Fokus auf den Kernworkflow (Song entdecken und üben) zu legen.
 
 **Oberflächenentwürfe:**  
-Der Prototyp verwendet eine kompakte, listenbasierte Darstellung der Songs. Zentrale Informationen sind auf einen Blick sichtbar, während Detailinformationen auf einer eigenen Seite dargestellt werden. Das Lernvideo nimmt visuell eine zentrale Rolle ein.
+Der Prototyp verwendet eine listenbasierte Darstellung der Songs mit klarer visueller Hierarchie. Zentrale Informationen sind direkt sichtbar, während weiterführende Inhalte auf Detailseiten ausgelagert sind. Interaktive Elemente wie Favoriten, Teilnahme oder Voting sind visuell hervorgehoben.
+
+**Abbildung 1:** Homepage
+![Songliste](static/ScreensPianly/Home.png)
+
+**Abbildung 2:** Songliste
+![Songliste](static/ScreensPianly/Screen1.png)
+
+**Abbildung 3:** Favoriten
+![Songliste](static/ScreensPianly/Screen2.png)
+
+**Abbildung 4:** Songdetails
+![Songliste](static/ScreensPianly/Screen3.png)
+
+**Abbildung 5:** Randomizer
+![Songliste](static/ScreensPianly/Screen4.png)
+
+**Abbildung 6:** Monthly Song
+![Songliste](static/ScreensPianly/Screen5.png)
+
+**Abbildung 7:** Anmeldeformular
+![Songliste](static/ScreensPianly/Screen6.png)
 
 **Designentscheidungen:**  
-- Reduziertes, modernes Layout zur Minimierung visueller Ablenkung  
-- Klare Typografie und konsistente Abstände  
-- Fokus auf Lesbarkeit und schnelle Interaktion  
-- Visuelle Hervorhebung interaktiver Elemente wie Favoriten
+- Reduziertes, modernes Interface zur Minimierung visueller Ablenkung  
+- Konsistente Typografie und Abstände für bessere Lesbarkeit  
+- Klare visuelle Trennung zwischen Informations- und Interaktionsbereichen  
+- Fokus auf einfache, selbsterklärende Interaktionen  
 
-#### 4.4.2. Umsetzung (Technik)
+#### 4.4.2 Umsetzung (Technik)
 
 **Technologie-Stack:**  
-SvelteKit mit Svelte 5 (Runes Mode), Node.js, MongoDB, Auth.js für Google-basierte Authentifizierung sowie Vite für die lokale Entwicklung.
+SvelteKit mit Svelte 5 (Runes Mode), Node.js, MongoDB sowie Auth.js für Google-basierte Authentifizierung. Vite wird für lokale Entwicklung und Build-Prozesse verwendet.
 
 **Tooling:**  
-Visual Studio Code, Git und GitHub für Versionsverwaltung sowie Browser-Entwicklertools zur Fehlersuche und Optimierung.
+Visual Studio Code als Entwicklungsumgebung, Git und GitHub zur Versionsverwaltung sowie Browser-Entwicklertools zur Fehlersuche und Optimierung.
 
 **Struktur & Komponenten:**  
-- /songs – Hauptseite mit Songliste  
-- /songs/[id] – Detailseite eines Songs  
-- Komponenten für Song-Row, Favoriten-Status und Sortierung  
-- State-Management mit Svelte 5 Runes ($state, $derived)
+- `/songs` – Übersicht der Songliste  
+- `/songs/[id]` – Detailseite eines Songs  
+- `/randomizer` – Zufällige Songempfehlung  
+- `/monthly-song` – Wettbewerbsansicht mit Beiträgen  
+- Wiederverwendbare Komponenten für Song-Items, Favoritenstatus, Voting und Sortierung  
+- State-Management mit Svelte 5 Runes (`$state`, `$derived`)
 
-**Daten & Schnittstellen [Optional]:**  
-Songdaten werden aus einer MongoDB-Collection geladen und serverseitig an die SvelteKit-Routen übergeben.
+**Daten & Schnittstellen:**  
+Songdaten sowie Wettbewerbsbeiträge werden aus einer MongoDB-Collection geladen und serverseitig über SvelteKit-Routen bereitgestellt.
 
 **Besondere Entscheidungen:**  
-Der Einsatz von Svelte 5 Runes Mode ermöglicht eine klare und performante State-Verwaltung ohne externe Stores. Die Authentifizierung wurde bewusst auf Google Login beschränkt, um die Komplexität gering zu halten.
+Der Einsatz von Svelte 5 Runes Mode ermöglicht eine klare und performante State-Verwaltung ohne externe Stores. Die Authentifizierung wurde bewusst auf Google Login beschränkt, um die Komplexität gering zu halten und die Einstiegshürde für Nutzende zu minimieren.
 
 
 ### 4.5 Validate
 
 **URL der getesteten Version:**  
-(Platzhalter: URL der getesteten und deployten Version.)
+https://pianly.netlify.app/
 
 **Ziele der Prüfung:**  
-- Überprüfen, ob Nutzende die Songliste intuitiv verstehen  
-- Evaluieren, ob der Wechsel zwischen Songliste, Detailseite und Favoriten nachvollziehbar ist  
-- Prüfen, ob die Favoriten-Funktion ohne Erklärung genutzt werden kann  
+Ziel der Usability-Evaluation war es zu überprüfen,
+- ob der Einstieg in die Anwendung (Login) verständlich ist,
+- ob Nutzende die Songliste intuitiv erfassen können,
+- ob der Wechsel zwischen Songliste, Detailseite und Favoriten nachvollziehbar ist,
+- und ob die Favoriten-Funktion ohne zusätzliche Erklärung genutzt werden kann.
 
 **Vorgehen:**  
-Unmoderierte Kurztests mit realen Nutzenden. Die Tests wurden remote durchgeführt, wobei die Testpersonen die Anwendung selbstständig erkundeten.
+Die Evaluation wurde als unmoderierter, szenario-basierter Kurztest durchgeführt.  
+Die Tests fanden remote statt. Die Testpersonen erhielten die Aufgaben in schriftlicher Form und wurden gebeten, während der Bearbeitung laut zu denken.
 
 **Stichprobe:**  
-2–3 Klavierlernende bzw. musikinteressierte Personen mit Grundkenntnissen im Umgang mit Web-Anwendungen.
+Es wurden drei Testpersonen einbezogen:
+- zwei Mitschüler aus der Klasse
+- eine musikinteressierte Person ohne formale Klavierausbildung.  
+Alle Testpersonen verfügen über grundlegende Erfahrung im Umgang mit Web-Anwendungen.
 
 **Aufgaben / Szenarien:**  
-- Ein Lied aus der Songliste auswählen und das Lernvideo starten  
-- Ein Lied als Favorit markieren  
-- Zur Favoritenansicht wechseln und ein gespeichertes Lied erneut öffnen  
+1. Öffne die Anwendung und melde dich mit deinem Google-Konto an.  
+2. Verschaffe dir einen Überblick über die Songliste und wähle ein Lied aus.  
+3. Öffne die Detailseite des Songs und starte das Lernvideo.  
+4. Markiere den Song als Favorit.  
+5. Wechsle zur Favoritenansicht und öffne den gespeicherten Song erneut.
 
 **Kennzahlen & Beobachtungen:**  
-- Alle Testpersonen konnten die Kernfunktionen ohne Anleitung nutzen  
-- Die Navigation wurde als klar und übersichtlich wahrgenommen  
-- Einzelne Rückmeldungen betrafen den Wunsch nach zusätzlichen Filter- oder Suchmöglichkeiten  
+- 3/3 Testpersonen konnten alle Aufgaben erfolgreich abschliessen.  
+- Der Login-Prozess wurde von allen Testpersonen sofort verstanden.  
+- Die Songliste wurde als übersichtlich und ruhig wahrgenommen.  
+- Zwei Testpersonen suchten zunächst nach einer Suchfunktion.  
+- Eine Testperson war kurz unsicher, ob ein Song erfolgreich als Favorit gespeichert wurde.
 
 **Zusammenfassung der Resultate:**  
-Die Tests zeigten, dass der grundlegende Workflow verständlich und stabil funktioniert. Besonders positiv hervorgehoben wurden die klare Struktur und der direkte Zugang zu den Lernvideos.
+Die Evaluation zeigte, dass der zentrale Workflow (Song finden → Detail ansehen → Favorit speichern) verständlich und stabil funktioniert. Besonders positiv bewertet wurden die reduzierte Oberfläche und der direkte Zugang zu den Lernvideos. Kleinere Unsicherheiten traten bei der Rückmeldung von Interaktionen auf.
 
 **Abgeleitete Verbesserungen:**  
-- Ergänzung einer Suchfunktion zur schnelleren Navigation  
-- Weitere visuelle Hervorhebung interaktiver Elemente  
+- Visuelle Rückmeldung beim Speichern eines Favoriten verstärken (z. B. deutlicher Statuswechsel).  
+- Ergänzung einer Suchfunktion zur schnelleren Orientierung bei grösseren Songlisten.  
 
 **Umgesetzte Anpassungen [Optional]:**  
-(Platzhalter: Nach Evaluation umgesetzte Verbesserungen können hier ergänzt werden.)
+- Die visuelle Hervorhebung des Favoriten-Status wurde nach der Evaluation angepasst, um klarer anzuzeigen, ob ein Song gespeichert ist.  
+- Kleinere UI-Anpassungen (Abstände, Kontrast) wurden vorgenommen, um die Lesbarkeit weiter zu verbessern.
+
 
 
 ## 5. Erweiterungen [Optional]
@@ -287,32 +324,56 @@ Die gesamte Idee, Konzeption, funktionale Struktur, technische Umsetzung, Datenb
 Der Einsatz von KI erwies sich als hilfreich zur Beschleunigung von Designentscheidungen und zur Verbesserung der Lesbarkeit der Dokumentation. Gleichzeitig war eine kritische Bewertung aller Vorschläge notwendig, da die Verantwortung für Qualität, Funktionalität und Korrektheit vollständig beim Autor liegt.
 
 
-### Eingesetzte KI‑Werkzeuge
-_[z. B. Copilot, ChatGPT, Claude, lokale Modelle; Version/Variante wenn bekannt]_
-
-### Zweck & Umfang
-_[**wie, wofür und in welchem Ausmass** wurde KI eingesetzt (z. B. Textentwürfe, Codevorschläge, Tests, Refactoring) sowie **Überlegungen** zu Qualität, Urheberrecht/Quellen und Prompt‑Vorgehen]_
-
-### Art der Beiträge
-_[konkret: welche Teile stammen (ganz/teilweise) aus KI‑Unterstützung?]_
-
-### Eigene Leistung (Abgrenzung)
-_[was ist eigenständig erarbeitet/überarbeitet worden?]_
-
-### Reflexion
-_[Nutzen, Grenzen, Risiken/Qualitätssicherung]_
-
-### **Prompt-Vorgehen [Optional]**
-Die KI wurde mit klaren, zielgerichteten Prompts verwendet, um Feedback zu Design-Entscheidungen, CSS-Struktur und Dokumentationstexten zu erhalten. Die Prompts waren beschreibend und kontextbezogen formuliert, um konkrete Verbesserungsvorschläge zu erhalten. Es wurden keine automatisierten oder generierten Code-Blöcke ungeprüft übernommen.
-
-### **Quellen & Rechte [Optional]**
-Für das Projekt wurden keine externen Designvorlagen oder kostenpflichtigen Assets verwendet. Alle Inhalte, Strukturen und Entscheidungen stammen aus eigener Arbeit. Externe Dienste wie YouTube werden lediglich über öffentlich verfügbare Einbettungsfunktionen genutzt. Es wurden keine urheberrechtlich geschützten Inhalte direkt in das Projekt integriert.
-
-
 ## 8. Anhang [Optional]
 Beispiele:
-- **Testskript & Materialien:** _[Link/Datei]_  
-- **Rohdaten/Auswertung:** _[Link/Datei]_  
+- **Testskript & Materialien:**  
+
+### Testskript
+Die folgenden Aufgaben wurden im Rahmen der Usability-Evaluation verwendet:
+1. Anmeldung mit Google-Konto
+2. Auswahl eines Songs aus der Songliste
+3. Öffnen der Song-Detailseite und Start des Lernvideos
+4. Speichern eines Songs als Favorit
+5. Wiederfinden des Songs in der Favoritenansicht
+
+### Beobachtungen (Auszug)
+- TP1 suchte zuerst nach einer Suchfunktion.
+- TP2 verstand die Favoriten-Funktion ohne Erklärung.
+- TP3 war kurz unsicher, ob der Favorit erfolgreich gespeichert wurde.
+
+- **Rohdaten/Auswertung:**  
+**Auswertung der Usability-Evaluation**
+
+An der Evaluation nahmen drei Testpersonen teil:
+- **TP1 & TP2:** Mitschüler mit Erfahrung im Umgang mit Web-Applikationen  
+- **TP3:** Musikinteressierte Person ohne formale Klavierausbildung  
+
+### Beobachtungen pro Testperson
+
+**Testperson 1 (Mitschüler):**
+- Fand den Login-Prozess sofort verständlich.
+- Orientierte sich schnell in der Songliste.
+- Erwartete zunächst eine Suchfunktion, fand den gewünschten Song jedoch auch ohne Probleme.
+- Speichern eines Songs als Favorit funktionierte problemlos, der visuelle Status wurde jedoch erst nach kurzem Hinsehen erkannt.
+
+**Testperson 2 (Mitschüler):**
+- Navigierte ohne Schwierigkeiten von der Songliste zur Detailseite.
+- Verstand die Favoriten-Funktion intuitiv.
+- Wechsel zwischen Songliste und Favoritenansicht war nachvollziehbar.
+- Äusserte den Wunsch nach zusätzlichen Filtermöglichkeiten bei grösseren Songlisten.
+
+**Testperson 3 (musikinteressierte Person):**
+- Benötigte etwas Zeit, um sich einen Überblick über die Songliste zu verschaffen.
+- Öffnete das Tutorial-Video ohne Schwierigkeiten.
+- War kurz unsicher, ob ein Song erfolgreich als Favorit gespeichert wurde.
+- Bewertete die Anwendung insgesamt als übersichtlich und ruhig gestaltet.
+
+### Identifizierte Usability-Probleme
+- Fehlende Suchfunktion wurde von zwei Testpersonen erwartet (mittleres Usability-Problem).
+- Der Status eines gespeicherten Favoriten war nicht für alle Testpersonen sofort eindeutig erkennbar (kleines Usability-Problem).
+
+### Zusammenfassende Erkenntnisse
+Der grundlegende Workflow (Anmeldung → Song auswählen → Detailseite → Favorit speichern) konnte von allen Testpersonen erfolgreich durchgeführt werden. Die Anwendung wurde als übersichtlich und verständlich wahrgenommen. Kleinere Unsicherheiten betrafen vor allem Rückmeldungen zu Interaktionen und erwartete Zusatzfunktionen.
 
 ---
 
